@@ -2,6 +2,9 @@ package app
 
 import (
 	"bwanews/config"
+	"bwanews/internal/adapter/handler"
+	"bwanews/internal/adapter/repository"
+	"bwanews/internal/core/service"
 	"bwanews/lib/auth"
 	"bwanews/lib/middleware"
 	"bwanews/lib/pagination"
@@ -22,7 +25,7 @@ import (
 
 func RunServer() {
 	cfg := config.NewConfig()
-	_, err := cfg.ConnectionPostgres()
+	db, err := cfg.ConnectionPostgres()
 	if err != nil {
 		log.Fatal("Error connection to database: %v", err)
 		return
@@ -35,10 +38,19 @@ func RunServer() {
 
 	_ = auth.NewJwt(cfg)
 	// Middleware
-	_ = auth.NewJwt(cfg)
+	jwt := auth.NewJwt(cfg) 
 	_ = middleware.NewMiddleware(cfg)
 
 	_ = pagination.NewPagination()
+
+	// Repository
+	authRepo := repository.NewAuthRepository(db.DB)
+
+	// Service
+	authService := service.NewAutService(authRepo, cfg, jwt)
+
+	//Handler
+	authHandler := handler.NewAuthHandler(authService)
 
 	//initialize Serve
 
@@ -49,7 +61,8 @@ func RunServer() {
 		Format: "[${time}] %{ip} %{status} - %{latency} %{method} %{path} \n",
 	}))
 
-	_ = app.Group("/api")
+	api := app.Group("/api")
+	api.Post("/login", authHandler.Login)
 
 	// routes
 	 go func() {

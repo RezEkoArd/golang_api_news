@@ -13,6 +13,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var err error
+var code string
+
+
 type AuthService interface {
 	GetUserByEmail(ctx context.Context, req entity.LoginRequest)(*entity.AccessToken, error)
 }
@@ -23,8 +27,6 @@ type authService struct{
 	jwtToken auth.Jwt
 }
 
-var err error
-var code string
 
 
 // Declare 
