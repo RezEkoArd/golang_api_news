@@ -56,7 +56,7 @@ func (o *Options) VerifyAccessToken(token string) (*entity.JwtData, error) {
 		}
 		
 		jwtData := &entity.JwtData{
-			UserId:  claim["user_id"].(float64),
+			UserID:  claim["user_id"].(float64),
 		}
 
 		return jwtData, nil
