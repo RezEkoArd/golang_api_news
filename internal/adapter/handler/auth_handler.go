@@ -11,7 +11,6 @@ import (
 	"github.com/gofiber/fiber/v2/log"
 )
 
-// buat variable global agar di handler lain bisa digunakan
 var err error
 var code string
 var errorResp response.ErrorResponseDefault
@@ -25,61 +24,55 @@ type authHandler struct {
 	authService service.AuthService
 }
 
+// Login implements AuthHandler.
 func (a *authHandler) Login(c *fiber.Ctx) error {
 	req := request.LoginRequest{}
 	resp := response.SuccessAuthResponse{}
 
-	// JIKA GAGAL
 	if err = c.BodyParser(&req); err != nil {
-		code = "[HANDLER] Login -1"
+		code = "[HANDLER] Login - 1"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
-		errorResp.Message = err.Error()
-
+		errorResp.Meta.Message = err.Error()
+		
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	// Check Validate
-	 if err = validate.Struct(req); err!= nil {
-		code = "[HANDLER] Login -2"
+	if err = validate.Struct(req); err!= nil {
+		code = "[HANDLER] Login - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
-		errorResp.Message = err.Error()
-
+		errorResp.Meta.Message = err.Error()
+		
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
-	 }
+	}
 
-	 // IF SUCCESS
-	 reqLogin := entity.LoginRequest{
+	reqLogin := entity.LoginRequest{
 		Email: req.Email,
 		Password: req.Password,
-	 }
+	}
 
-	 result, err := a.authService.GetUserByEmail(c.Context(), reqLogin)
-	 if err!= nil {
-		code = "[HANDLER] Login - 3"
+	result, err := a.authService.GetUserByEmail(c.Context(), reqLogin)
+	if err!= nil {
+		code = "[HANDLER] Login - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
-		errorResp.Message = err.Error()
+		errorResp.Meta.Message = err.Error()
+		
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
 
-		if err.Error() == "invalid password" {
-			 return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
-		}
-		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
-	 }
+	resp.Meta.Status = true
+	resp.Meta.Message = "Login Successful"
+	resp.AccessToken = result.AccessToken
+	resp.ExpiresAt = result.ExpiresAt
 
-	 resp.Meta.Status = true
-	 resp.Meta.Message = "Login SuccessFully"
-	 resp.AccessToken = result.AccessToken
-	 resp.ExpiresAt = string(result.ExpiresAt)
 
-	 return c.JSON(resp)
+	return c.JSON(resp)
 }
-
 
 func NewAuthHandler(authService service.AuthService) AuthHandler {
 	return &authHandler{
-
+		authService: authService,
 	}
 }
-

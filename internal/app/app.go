@@ -36,24 +36,22 @@ func RunServer() {
 	cdfR2 := cfg.LoadAwsConfig()
 	_ = s3.NewFromConfig(cdfR2)
 
-	_ = auth.NewJwt(cfg)
-	// Middleware
-	jwt := auth.NewJwt(cfg) 
-	_ = middleware.NewMiddleware(cfg)
+	jwt := auth.NewJwt(cfg)
+	_ = middleware.NewMiddleware(cfg) // Middleware
 
 	_ = pagination.NewPagination()
 
-	// Repository
-	authRepo := repository.NewAuthRepository(db.DB)
+	//? Repository
+	authrepo := repository.NewAuthRepository(db.DB)
+	
 
-	// Service
-	authService := service.NewAutService(authRepo, cfg, jwt)
+	//? Service
+	authService := service.NewAuthService(authrepo, cfg, jwt) 
 
-	//Handler
-	authHandler := handler.NewAuthHandler(authService)
+	//? Handler
+	authHandler :=  handler.NewAuthHandler(authService)
 
 	//initialize Serve
-
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Use(recover.New())
