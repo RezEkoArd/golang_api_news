@@ -58,11 +58,13 @@ func (a *authHandler) Login(c *fiber.Ctx) error {
 	 result, err := a.authService.GetUserByEmail(c.Context(), reqLogin)
 	 if err!= nil {
 		code = "[HANDLER] Login - 3"
-
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Message = err.Error()
 
+		if err.Error() == "invalid password" {
+			 return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+		}
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	 }
 
