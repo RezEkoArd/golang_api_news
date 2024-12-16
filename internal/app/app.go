@@ -38,19 +38,22 @@ func RunServer() {
 	_ = s3.NewFromConfig(cdfR2)
 
 	jwt := auth.NewJwt(cfg)
-	_ = middleware.NewMiddleware(cfg) // Middleware
+	middlewareAuth := middleware.NewMiddleware(cfg) // Middleware
 
 	_ = pagination.NewPagination()
 
 	//? Repository
 	authrepo := repository.NewAuthRepository(db.DB)
+	categoryRepo := repository.NewCategoryRepository(db.DB)
 	
 
 	//? Service
 	authService := service.NewAuthService(authrepo, cfg, jwt) 
+	categoryService := service.NewCategoryService(categoryRepo)
 
 	//? Handler
 	authHandler :=  handler.NewAuthHandler(authService)
+	categoryHandler :=  handler.NewCatgoryHandler(categoryService)
 
 	//initialize Serve
 	app := fiber.New()
@@ -62,6 +65,14 @@ func RunServer() {
 
 	api := app.Group("/api")
 	api.Post("/login", authHandler.Login)
+
+	
+	adminApp := api.Group("/admin")
+	adminApp.Use(middlewareAuth.CheckToken())
+
+	//? Category
+	categoryApp := adminApp.Group("/categories")
+	categoryApp.Get("/", categoryHandler.GetCategories)
 
 	// routes
 	 go func() {
