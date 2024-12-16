@@ -23,11 +23,30 @@ func SeedRoles(db *gorm.DB){
 	}
 
 	//? Jika ada Akun admin console "Error seeding admin role" klo gk dia buat akun baru
-	if err := db.FirstOrCreate(&admin,model.User{Email: "admin@gmail.com"}).Error; err != nil {
-		log.Fatal().Err(err).Msg("Error seeding admin role")
+	//? Cek apakah akun sudah ada
+	var existingUser model.User
+	if err := db.Where("email= ?", "admin@gmail.com").First(&existingUser).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			//! Akun tidak di temukan, buat Baru
+			if err := db.Create(&admin).Error; err != nil {
+				log.Fatal().Err(err).Msg("Error Creating admin Role")
+			} else {
+				log.Info().Msg("Admin role seeded successfully")
+			}
+		} else {
+			log.Fatal().Err(err).Msg("Error checking admin role")
+		}	
 	} else {
-		log.Info().Msg("Admin role seeded Successfully")
-	} 
+		log.Info().Msg("Admin account already exists")
+	}
+	 
+
+
+	// if err := db.FirstOrCreate(&admin,model.User{Email: "admin@gmail.com"}).Error; err != nil {
+	// 	log.Fatal().Err(err).Msg("Error seeding admin role")
+	// } else {
+	// 	log.Info().Msg("Admin role seeded Successfully")
+	// } 
  
 
 }

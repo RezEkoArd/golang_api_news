@@ -26,7 +26,7 @@ func (o *Options) GenerateToken(data *entity.JwtData) (string, int64, error){
 	data.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(expiresAt)
 	data.RegisteredClaims.Issuer = o.issuer
 	data.RegisteredClaims.NotBefore = jwt.NewNumericDate(now)
-	acToken := jwt.NewWithClaims(jwt.SigningMethodES256, data)
+	acToken := jwt.NewWithClaims(jwt.SigningMethodHS256, data)
 	accessToken, err := acToken.SignedString([]byte(o.signingKey))
 	if err!= nil {
 		return "",0, err
