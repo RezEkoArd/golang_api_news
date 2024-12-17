@@ -1,9 +1,11 @@
 package handler
 
 import (
+	"bwanews/internal/adapter/handler/request"
 	"bwanews/internal/adapter/handler/response"
 	"bwanews/internal/core/domain/entity"
 	"bwanews/internal/core/service"
+	validatorLib "bwanews/lib/validator"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -25,7 +27,59 @@ type categoryHandler struct {
 
 // CreateCategory implements CategoryHandler.
 func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error{
-	panic("unimplemented")
+	var req request.CategoryRequest
+	claims := c.Locals("user").(*entity.JwtData)
+	userID := claims.UserID
+	if userID == 0 {
+		code = "[HANDLER] createCategory - 1"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Unauthorize access"
+
+		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+	}
+
+	if err = c.BodyParser(&req); err != nil {
+		code = 	"[HANDLER] CreateCategory - 2"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = "Invalid request body"
+		
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
+	}
+
+	if err = validatorLib.ValidateStruct(req); err != nil {
+		code = "[HANDLER] CreateCategory - 3"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)	
+	}
+
+	reqEntity := entity.CategoryEntity{
+		Title: req.Title,
+		User: entity.UserEntity{
+			ID: int64(userID),
+		},
+	}
+
+	err = ch.categoryService.CreateCategory(c.Context(), reqEntity)
+	if err!= nil {
+		code = "[HANDLER] CreateCategory - 4"
+		log.Errorw(code , err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	defaultSuccessResponse.Data = nil
+	defaultSuccessResponse.Pagination = nil
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Meta.Message = "Category create successfully"
+	return c.JSON(defaultSuccessResponse)
+
 }
 
 // DeleteCategory implements CategoryHandler.
@@ -70,6 +124,7 @@ func (ch *categoryHandler) GetCategories(c *fiber.Ctx) error{
 		categoryResponses = append(categoryResponses, categoryResponse)
 	}
 	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Pagination = nil
 	defaultSuccessResponse.Meta.Message = "Categories fetched successfully"
 	defaultSuccessResponse.Data = categoryResponses
 

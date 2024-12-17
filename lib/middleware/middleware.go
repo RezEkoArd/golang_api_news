@@ -25,19 +25,25 @@ func (o Options) CheckToken() func(*fiber.Ctx) error {
 		var errorResponse response.ErrorResponseDefault
 		authHandler := c.Get("Authorization")
 
-		if authHandler == ""{
+		if authHandler == "" {
 			errorResponse.Meta.Status = false
 			errorResponse.Meta.Message = "Missing Authorization header"
 			return c.Status(fiber.StatusUnauthorized).JSON(errorResponse)
 		}
 
-		tokenString := strings.Split(authHandler, "Bearer")[1]
+		// fmt.Println("Authorization Header:", authHandler) // Cek header yang diterima
+
+		// Ambil Token dari header "Bearer Token")
+
+
+		tokenString := strings.Split(authHandler, "Bearer ")[1]
 		claims, err := o.authJwt.VerifyAccessToken(tokenString)
 
 		if (err) != nil {
 			errorResponse.Meta.Status = false
 			errorResponse.Meta.Message = "Invalid Token"
 			return c.Status(fiber.StatusUnauthorized).JSON(errorResponse)
+			
 		}
 
 		c.Locals("user", claims)
