@@ -60,6 +60,7 @@ func (c *categoryRepository) DeleteCategory(ctx context.Context, id int64) error
 
 // EditCategoryByID implements CategoryRepository.
 func (c *categoryRepository) EditCategoryByID(ctx context.Context, req entity.CategoryEntity) error {
+	
 	panic("unimplemented")
 }
 
@@ -101,6 +102,24 @@ func (c *categoryRepository) GetCategories(ctx context.Context) ([]entity.Catego
 
 // GetCategoryByID implements CategoryRepository.
 func (c *categoryRepository) GetCategoryByID(ctx context.Context, id int64) (*entity.CategoryEntity, error) {
+	var modelCategory model.Category
+	err = c.db.Where("id = ?", id).Preload("User").First(&modelCategory).Error
+	if err!= nil {
+		code = "[REPOSITORY] GetCategoryByID - 1"
+		log.Errorw(code, err)
+		return nil, err
+	}
+
+	return &entity.CategoryEntity{
+		ID:    modelCategory.ID,
+		Title: modelCategory.Title,
+		Slug:  modelCategory.Slug,
+		User:  entity.UserEntity{
+			ID:       modelCategory.User.ID,
+			Name:     modelCategory.User.Name,
+			Email:    modelCategory.User.Email,
+		},
+	}, nil
 	panic("unimplemented")
 }
 

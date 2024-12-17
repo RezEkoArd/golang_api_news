@@ -74,6 +74,7 @@ func RunServer() {
 	categoryApp := adminApp.Group("/categories")
 	categoryApp.Get("/", categoryHandler.GetCategories)
 	categoryApp.Post("/", categoryHandler.CreateCategory)
+	categoryApp.Get("/:categoryID", categoryHandler.GetCategoryByID)
 
 	// routes
 	 go func() {
