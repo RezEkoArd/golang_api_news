@@ -282,6 +282,6 @@ func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error{
 
 }
 
-func NewCatgoryHandler(categoryService service.CategoryService) CategoryHandler {
+func NewCategoryHandler(categoryService service.CategoryService) CategoryHandler {
 	return &categoryHandler{categoryService: categoryService}
 }
