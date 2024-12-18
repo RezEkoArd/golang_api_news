@@ -41,8 +41,6 @@ func RunServer() {
 		return
 	}
 
-	
-
 
 	// Cloudflare
 	cdfR2 := cfg.LoadAwsConfig()

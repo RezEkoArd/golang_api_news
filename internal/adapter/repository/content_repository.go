@@ -14,8 +14,8 @@ type ContentRepository interface {
 	GetContents(ctx context.Context) ([]entity.ContentEntity, error)
 	GetContentByID(ctx context.Context, id int64) (*entity.ContentEntity, error)
 	CreateContent(ctx context.Context, req entity.ContentEntity) error
-	UpdateContext(ctx context.Context, req entity.ContentEntity) error
-	DeleteContext(ctx context.Context, id int64) error
+	UpdateContent(ctx context.Context, req entity.ContentEntity) error
+	DeleteContent(ctx context.Context, id int64) error
 }
 
 type contentRepository struct {
@@ -28,13 +28,52 @@ func (c *contentRepository) CreateContent(ctx context.Context, req entity.Conten
 }
 
 // DeleteContext implements ContentRepository.
-func (c *contentRepository) DeleteContext(ctx context.Context, id int64) error {
-	panic("unimplemented")
+func (c *contentRepository) DeleteContent(ctx context.Context, id int64) error {
+
+	err = c.db.Where("id = ?", id).Delete(&model.Content{}).Error
+	if err!=nil{
+		code := "[REPOSITORY] DeleteContent - 1"
+		log.Errorw(code, err)
+		return err
+	}
+	return nil
 }
 
 // GetContentByID implements ContentRepository.
 func (c *contentRepository) GetContentByID(ctx context.Context, id int64) (*entity.ContentEntity, error) {
-	panic("unimplemented")
+	var modelContent model.Content
+
+	err = c.db.Where("id = ?", id).Preload("User", "Category").First(&modelContent).Error
+	if err != nil {
+		code = "[REPOSITORY] GetContentByID - 1 "
+		log.Errorw(code, err)
+		return nil, err
+	}
+
+	tags := strings.Split(modelContent.Tags, ".")
+		resp := entity.ContentEntity{
+			ID:           modelContent.ID,
+			Title:        modelContent.Title,
+			Excerpt:      modelContent.Excerpt,
+			Description:  modelContent.Description,
+			Image:        modelContent.Image,
+			Tags:         tags,
+			Status:       modelContent.Status,
+			CategoryID:   modelContent.CategoryID,
+			CategoryByID: modelContent.CreatedByID,
+			CreatedAt:    modelContent.CreatedAt,
+			Category:     entity.CategoryEntity{
+				ID:    modelContent.CategoryID,
+				Title: modelContent.Category.Title,
+				Slug:  modelContent.Category.Slug, 
+			},
+			User:         entity.UserEntity{
+				ID:       modelContent.User.ID,
+				Name:     modelContent.User.Name,
+			},
+		}
+
+		return &resp, nil
 }
 
 // GetContents implements ContentRepository.
@@ -78,7 +117,7 @@ func (c *contentRepository) GetContents(ctx context.Context) ([]entity.ContentEn
 }
 
 // UpdateContext implements ContentRepository.
-func (c *contentRepository) UpdateContext(ctx context.Context, req entity.ContentEntity) error {
+func (c *contentRepository) UpdateContent(ctx context.Context, req entity.ContentEntity) error {
 	panic("unimplemented")
 }
 
