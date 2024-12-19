@@ -11,7 +11,7 @@ type ContentEntity struct {
 	Tags []string
 	Status string
 	CategoryID int64
-	CategoryByID int64
+	CreatedByID int64
 	CreatedAt	time.Time
 	Category CategoryEntity
 	User UserEntity

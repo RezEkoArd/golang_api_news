@@ -73,7 +73,7 @@ func (c *contentService) GetContents(ctx context.Context) ([]entity.ContentEntit
 
 // UpdateContext implements ContentService.
 func (c *contentService) UpdateContent(ctx context.Context, req entity.ContentEntity) error {
-	err = c.UpdateContent(ctx, req)
+	err = c.contentRepo.UpdateContent(ctx, req)
 	if err != nil {
 		code = "[SERVICE] UpdateContent - 1"
 		log.Errorw(code, err)	

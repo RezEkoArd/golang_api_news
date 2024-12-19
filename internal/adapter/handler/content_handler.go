@@ -53,12 +53,12 @@ func (ch *contentHandler) CreateContent(c *fiber.Ctx) error {
 	}
 
 	if err = validatorLib.ValidateStruct(&req); err != nil {
-		code := "[Handler] CreateContent - 2"
+		code := "[Handler] CreateContent - 3"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 
-		return c.Status(fiber.StatusBadRequest).JSON(err)
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	tags := strings.Split(req.Tag, ",")
@@ -70,7 +70,7 @@ func (ch *contentHandler) CreateContent(c *fiber.Ctx) error {
 		Tags:         tags,
 		Status:       req.Status,
 		CategoryID:   req.CategoryID,
-		CategoryByID: int64(userID),
+		CreatedByID: int64(userID),
 	}
 
 	err = ch.contentService.CreateContent(c.Context(), reqEntity)
@@ -177,7 +177,7 @@ func (ch *contentHandler) GetContentByID(c *fiber.Ctx) error {
 			Tags:         result.Tags,
 			Status:       result.Status,
 			CategoryID:   result.CategoryID,
-			CategoryByID: result.CategoryByID,
+			CategoryByID: result.CreatedByID,
 			CreatedAt: 	result.CreatedAt.Format(time.RFC3339),
 			CategoryName: result.Category.Title,
 			Author:       result.User.Name,
@@ -202,7 +202,7 @@ func (ch *contentHandler) GetContents(c *fiber.Ctx) error {
 
 	results, err := ch.contentService.GetContents(c.Context())
 	if err != nil {
-		code := "[Handler] GetContents - 1"
+		code := "[Handler] GetContents - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Unauthorized access"
@@ -224,7 +224,7 @@ func (ch *contentHandler) GetContents(c *fiber.Ctx) error {
 			Tags:         content.Tags,
 			Status:       content.Status,
 			CategoryID:   content.CategoryID,
-			CategoryByID: content.CategoryByID,
+			CategoryByID: content.CreatedByID,
 			CreatedAt: 	content.CreatedAt.Format(time.RFC3339),
 			CategoryName: content.Category.Title,
 			Author:       content.User.Name,
@@ -290,7 +290,7 @@ func (ch *contentHandler) UpdateContent(c *fiber.Ctx) error {
 		Tags:         tags,
 		Status:       req.Status,
 		CategoryID:   req.CategoryID,
-		CategoryByID: int64(userID),
+		CreatedByID: int64(userID),
 	}
 
 	err = ch.contentService.UpdateContent(c.Context(), reqEntity)
@@ -313,7 +313,7 @@ func (ch *contentHandler) UpdateContent(c *fiber.Ctx) error {
 func (ch *contentHandler) UploadImageR2(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
 	if claims.UserID == 0 {
-		code := "[Handler] UploadImageR2 - 1"
+		code := "[HANDLER] UploadImageR2 - 1"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Unauthorized access"
@@ -324,42 +324,42 @@ func (ch *contentHandler) UploadImageR2(c *fiber.Ctx) error {
 	var req request.FileUploadRequest
 	file, err := c.FormFile("image")
 	if err != nil {
-		code := "[Handler] UploadImageR2 - 2"
+		code := "[HANDLER] UploadImageR2 - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
-		errorResp.Meta.Message = "Invalid Body Request"
+		errorResp.Meta.Message = "Invalid request body"
 
-		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
-	if err := c.SaveFile(file, fmt.Sprintf("./temp/content/%s", file.Filename)); err != nil {
-		code := "[Handler] UploadImageR2 - 3"
-		log.Errorw(code, err)
-		errorResp.Meta.Status = false
-		errorResp.Meta.Message = err.Error() 
-
-		return c.Status(fiber.StatusUnauthorized).JSON(errorResp)
-	}
-
-	req.Image = fmt.Sprintf("./temp.content/$s", file.Filename)
-	reqEntity := entity.FileUploadEntity{
-		Name: fmt.Sprintf("%d-%d", claims.UserID, time.Now().UnixNano()),
-		Path: req.Image,
-	}
-
-	imageUrl, err := ch.contentService.UploadImageR2(c.Context(), reqEntity)
-	if err != err {
-		code := "[Handler] UploadImageR2 - 4"
+	if err = c.SaveFile(file, fmt.Sprintf("./temp/content/%s", file.Filename)); err != nil {
+		code := "[HANDLER] UploadImageR2 - 3"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
-	}		
+	}
+
+	req.Image = fmt.Sprintf("./temp/content/%s", file.Filename)
+	reqEntity := entity.FileUploadEntity{
+		Name: fmt.Sprintf("%d-%d", int64(claims.UserID), time.Now().UnixNano()),
+		Path: req.Image,
+	}
+
+	imageUrl, err := ch.contentService.UploadImageR2(c.Context(), reqEntity)
+	if err != nil {
+		code := "[HANDLER] UploadImageR2 - 4"
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
 
 	if req.Image != "" {
 		err = os.Remove(req.Image)
-		if err!= nil {
+		if err != nil {
 			code := "[HANDLER] UploadImageR2 - 5"
 			log.Errorw(code, err)
 			errorResp.Meta.Status = false
@@ -370,17 +370,15 @@ func (ch *contentHandler) UploadImageR2(c *fiber.Ctx) error {
 	}
 
 	urlImageResp := map[string]interface{}{
-		"urlImage" : imageUrl,
+		"urlImage": imageUrl,
 	}
 
-	
 	defaultSuccessResponse.Meta.Status = true
 	defaultSuccessResponse.Meta.Message = "Success"
 	defaultSuccessResponse.Data = urlImageResp
 
 	return c.Status(fiber.StatusCreated).JSON(defaultSuccessResponse)
-
-} 
+}
 
 func NewContentHandler(contentService service.ContentService) ContentHandler {
 	return &contentHandler{contentService: contentService}

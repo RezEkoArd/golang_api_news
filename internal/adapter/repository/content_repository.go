@@ -8,6 +8,7 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type ContentRepository interface {
@@ -34,7 +35,7 @@ func (c *contentRepository) CreateContent(ctx context.Context, req entity.Conten
 		Tags:        tags,
 		Status:      req.Status,
 		CategoryID:  req.CategoryID,
-		CreatedByID: req.CategoryByID,
+		CreatedByID: req.CreatedByID,
 	}
 
 	err = c.db.Create(&modelContent).Error
@@ -80,7 +81,7 @@ func (c *contentRepository) GetContentByID(ctx context.Context, id int64) (*enti
 			Tags:         tags,
 			Status:       modelContent.Status,
 			CategoryID:   modelContent.CategoryID,
-			CategoryByID: modelContent.CreatedByID,
+			CreatedByID: modelContent.CreatedByID,
 			CreatedAt:    modelContent.CreatedAt,
 			Category:     entity.CategoryEntity{
 				ID:    modelContent.CategoryID,
@@ -99,7 +100,8 @@ func (c *contentRepository) GetContentByID(ctx context.Context, id int64) (*enti
 // GetContents implements ContentRepository.
 func (c *contentRepository) GetContents(ctx context.Context) ([]entity.ContentEntity, error) {
 	var modelContents []model.Content
-	err = c.db.Order("created_at DESC").Preload("User","Category").Find(&modelContents).Error
+
+	err = c.db.Order("created_at DESC").Preload(clause.Associations).Find(&modelContents).Error
 	if err != nil {
 		code = "[REPOSITORY] GetContents - 1"
 		log.Errorw(code, err)
@@ -118,7 +120,7 @@ func (c *contentRepository) GetContents(ctx context.Context) ([]entity.ContentEn
 			Tags:         tags,
 			Status:       val.Status,
 			CategoryID:   val.CategoryID,
-			CategoryByID: val.CreatedByID,
+			CreatedByID: val.CreatedByID,
 			CreatedAt:    val.CreatedAt,
 			Category:     entity.CategoryEntity{
 				ID:    val.CategoryID,
@@ -146,8 +148,8 @@ func (c *contentRepository) UpdateContent(ctx context.Context, req entity.Conten
 		Image:       req.Image,
 		Tags:        tags,
 		Status:      req.Status,
-		CategoryID:  0,
-		CreatedByID: 0,
+		CategoryID:  req.CategoryID,
+		CreatedByID: req.CreatedByID,
 	}
 
 	err = c.db.Where("id = ?", req.ID).Updates(&modelContent).Error

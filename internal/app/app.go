@@ -45,7 +45,7 @@ func RunServer() {
 	// Cloudflare
 	cdfR2 := cfg.LoadAwsConfig()
 	s3Client := s3.NewFromConfig(cdfR2)
-	r2Adapter := cloudflare.NewCloudFlareR2Adapter(s3Client, cfg)
+	r2Adapter := cloudflare.NewCloudflareR2Adapter(s3Client, cfg)
 
 	jwt := auth.NewJwt(cfg)
 	middlewareAuth := middleware.NewMiddleware(cfg) // Middleware
