@@ -27,7 +27,13 @@ type contentService struct {
 
 // CreateContent implements ContentService.
 func (c *contentService) CreateContent(ctx context.Context, req entity.ContentEntity) error {
-	panic("unimplemented")
+	err = c.contentRepo.CreateContent(ctx, req)
+	if err != nil {
+		code = "[Service] CreateContent - 1"
+		log.Errorw(code, err)
+		return err
+	}
+	return nil
 }
 
 // DeleteContext implements ContentService.
@@ -67,12 +73,25 @@ func (c *contentService) GetContents(ctx context.Context) ([]entity.ContentEntit
 
 // UpdateContext implements ContentService.
 func (c *contentService) UpdateContent(ctx context.Context, req entity.ContentEntity) error {
-	panic("unimplemented")
+	err = c.UpdateContent(ctx, req)
+	if err != nil {
+		code = "[SERVICE] UpdateContent - 1"
+		log.Errorw(code, err)	
+		return err
+	}
+	return nil 
 }
 
 // UploadImageR2 implements ContentService.
 func (c *contentService) UploadImageR2(ctx context.Context, req entity.FileUploadEntity) (string, error) {
-	panic("unimplemented")
+	urlImage, err := c.r2.UploadImage(&req)
+	if err != nil {
+		code = "[SERVICE] UploadImageR2 - 1"
+		log.Errorw(code, err)
+		return "", err
+	}
+
+	return urlImage, nil
 }
 
 func NewContentService(repo repository.ContentRepository, cfg *config.Config, r2 cloudflare.CloudflareR2Adapter) ContentService {
