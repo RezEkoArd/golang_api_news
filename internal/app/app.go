@@ -56,17 +56,20 @@ func RunServer() {
 	authrepo := repository.NewAuthRepository(db.DB)
 	categoryRepo := repository.NewCategoryRepository(db.DB)
 	contentRepo := repository.NewContentRepository(db.DB)
+	userRepo := repository.NewUserRepository(db.DB)
 	
 
 	//? Service
 	authService := service.NewAuthService(authrepo, cfg, jwt) 
 	categoryService := service.NewCategoryService(categoryRepo)
 	contentService := service.NewContentService(contentRepo, cfg, r2Adapter)
+	userService := service.NewUserService(userRepo)
 
 	//? Handler
 	authHandler :=  handler.NewAuthHandler(authService)
 	categoryHandler :=  handler.NewCategoryHandler(categoryService)
 	contentHandler := handler.NewContentHandler(contentService)
+	userHandler := handler.NewUserHandler(userService)
 
 	//initialize Serve
 	app := fiber.New()
@@ -101,6 +104,11 @@ func RunServer() {
 	contentApp.Delete("/:contentID", contentHandler.DeleteContent)
 	contentApp.Post("/upload-image", contentHandler.UploadImageR2)
 
+	//? User
+	userApp := adminApp.Group("/users/profile")
+	userApp.Get("/",userHandler.GetUserByID)
+	userApp.Put("/update-password",userHandler.UpdatePassword)
+ 
 
 	// routes
 	 go func() {
