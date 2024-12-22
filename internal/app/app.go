@@ -136,6 +136,12 @@ func RunServer() {
 	userApp.Put("/update-password",userHandler.UpdatePassword)
  
 
+	//? FE
+	feApp := api.Group("fe/")
+	feApp.Get("/categories",categoryHandler.GetCategoryFE)
+	feApp.Get("/contents",contentHandler.GetContentWithQuery)
+	feApp.Get("/contents/:contentID", contentHandler.GetContentDetail)
+
 	//? routes
 	 go func() {
 		if cfg.App.AppPort == "" {

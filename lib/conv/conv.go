@@ -39,5 +39,13 @@ func GenerateSlug(title string) string {
 	return slug	
 }
 
+//
+func StringToInt(s string) (int, error) {
+	numb, err := strconv.Atoi(s)
+	if err != nil {
+		return 0, err
+	}
 
+	return numb, err
+}
 

@@ -15,19 +15,53 @@ import (
 var defaultSuccessResponse response.DefaultSuccessResponse
 
 type CategoryHandler interface {
-	GetCategories(c *fiber.Ctx) error 
+	GetCategories(c *fiber.Ctx) error
 	GetCategoryByID(c *fiber.Ctx) error
 	CreateCategory(c *fiber.Ctx) error
 	EditCategoryByID(c *fiber.Ctx) error
 	DeleteCategory(c *fiber.Ctx) error
+
+	GetCategoryFE(c *fiber.Ctx) error
 }
 
 type categoryHandler struct {
 	categoryService service.CategoryService
 }
 
+// GetCategoryFE implements CategoryHandler.
+func (ch *categoryHandler) GetCategoryFE(c *fiber.Ctx) error {
+	results, err := ch.categoryService.GetCategories(c.Context())
+
+	if err != nil  {
+		code = "[HANDLER] GetCategoryFE - 1"
+			log.Errorw(code, err)
+			errorResp.Meta.Status = false
+			errorResp.Meta.Message = err.Error()
+	
+			return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	}
+
+	categoryResponses := []response.SuccessCategoryResponse{}
+	for _, result := range results {
+		categoryResponse := response.SuccessCategoryResponse{
+			ID:            result.ID,
+			Title:         result.Title,
+			Slug:          result.Slug,
+			CreatedByName: result.User.Name,
+		}
+		categoryResponses = append(categoryResponses, categoryResponse)
+	}
+	defaultSuccessResponse.Meta.Status = true
+	defaultSuccessResponse.Pagination = nil
+	defaultSuccessResponse.Meta.Message = "Categories fetched successfully"
+	defaultSuccessResponse.Data = categoryResponses
+
+	return c.JSON(defaultSuccessResponse)
+
+}
+
 // CreateCategory implements CategoryHandler.
-func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error{
+func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error {
 	var req request.CategoryRequest
 	claims := c.Locals("user").(*entity.JwtData)
 	userID := claims.UserID
@@ -41,11 +75,11 @@ func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error{
 	}
 
 	if err = c.BodyParser(&req); err != nil {
-		code = 	"[HANDLER] CreateCategory - 2"
+		code = "[HANDLER] CreateCategory - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = "Invalid request body"
-		
+
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
@@ -55,7 +89,7 @@ func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error{
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 
-		return c.Status(fiber.StatusBadRequest).JSON(errorResp)	
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	reqEntity := entity.CategoryEntity{
@@ -66,9 +100,9 @@ func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error{
 	}
 
 	err = ch.categoryService.CreateCategory(c.Context(), reqEntity)
-	if err!= nil {
+	if err != nil {
 		code = "[HANDLER] CreateCategory - 4"
-		log.Errorw(code , err)
+		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 
@@ -84,7 +118,7 @@ func (ch *categoryHandler) CreateCategory(c *fiber.Ctx) error{
 }
 
 // DeleteCategory implements CategoryHandler.
-func (ch *categoryHandler) DeleteCategory(c *fiber.Ctx) error{
+func (ch *categoryHandler) DeleteCategory(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
 	userID := claims.UserID
 	if userID == 0 {
@@ -97,14 +131,13 @@ func (ch *categoryHandler) DeleteCategory(c *fiber.Ctx) error{
 
 	idParams := c.Params("categoryID")
 	id, err := conv.StringToInt64(idParams)
-	if err!= nil {
+	if err != nil {
 		code = "[HANDLER] DeleteCategory - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
 		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
-
 
 	err = ch.categoryService.DeleteCategory(c.Context(), id)
 	if err != nil {
@@ -115,7 +148,7 @@ func (ch *categoryHandler) DeleteCategory(c *fiber.Ctx) error{
 
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
-	
+
 	defaultSuccessResponse.Data = nil
 	defaultSuccessResponse.Meta.Status = true
 	defaultSuccessResponse.Pagination = nil
@@ -125,7 +158,7 @@ func (ch *categoryHandler) DeleteCategory(c *fiber.Ctx) error{
 }
 
 // EditCategoryByID implements CategoryHandler.
-func (ch *categoryHandler) EditCategoryByID(c *fiber.Ctx) error{
+func (ch *categoryHandler) EditCategoryByID(c *fiber.Ctx) error {
 	var req request.CategoryRequest
 	claims := c.Locals("user").(*entity.JwtData)
 	userID := claims.UserID
@@ -168,7 +201,7 @@ func (ch *categoryHandler) EditCategoryByID(c *fiber.Ctx) error{
 	}
 
 	reqEntity := entity.CategoryEntity{
-		ID: id,
+		ID:    id,
 		Title: req.Title,
 		User: entity.UserEntity{
 			ID: int64(userID),
@@ -194,7 +227,7 @@ func (ch *categoryHandler) EditCategoryByID(c *fiber.Ctx) error{
 }
 
 // GetCategories implements CategoryHandler.
-func (ch *categoryHandler) GetCategories(c *fiber.Ctx) error{
+func (ch *categoryHandler) GetCategories(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
 	userID := claims.UserID
 	if userID == 0 {
@@ -206,7 +239,7 @@ func (ch *categoryHandler) GetCategories(c *fiber.Ctx) error{
 	}
 
 	results, err := ch.categoryService.GetCategories(c.Context())
-	if err!= nil {
+	if err != nil {
 		code = "[HANDLER] GetCategories - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
@@ -217,9 +250,9 @@ func (ch *categoryHandler) GetCategories(c *fiber.Ctx) error{
 	categoryResponses := []response.SuccessCategoryResponse{}
 	for _, result := range results {
 		categoryResponse := response.SuccessCategoryResponse{
-			ID: 	result.ID,
-			Title:	result.Title,
-			Slug:	result.Slug,
+			ID:            result.ID,
+			Title:         result.Title,
+			Slug:          result.Slug,
 			CreatedByName: result.User.Name,
 		}
 		categoryResponses = append(categoryResponses, categoryResponse)
@@ -234,7 +267,7 @@ func (ch *categoryHandler) GetCategories(c *fiber.Ctx) error{
 }
 
 // GetCategoryByID implements CategoryHandler.
-func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error{
+func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error {
 	claims := c.Locals("user").(*entity.JwtData)
 	userID := claims.UserID
 	if userID == 0 {
@@ -247,7 +280,7 @@ func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error{
 
 	idParams := c.Params("categoryID")
 	id, err := conv.StringToInt64(idParams)
-	if err!= nil {
+	if err != nil {
 		code = "[HANDLER] GetCategories - 2"
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
@@ -261,7 +294,7 @@ func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error{
 		log.Errorw(code, err)
 		errorResp.Meta.Status = false
 		errorResp.Meta.Message = err.Error()
-		
+
 		return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
 	}
 
@@ -278,7 +311,6 @@ func (ch *categoryHandler) GetCategoryByID(c *fiber.Ctx) error{
 	defaultSuccessResponse.Data = categoryResponse
 
 	return c.JSON(defaultSuccessResponse)
-
 
 }
 
