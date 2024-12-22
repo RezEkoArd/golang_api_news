@@ -1,0 +1,806 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "description": "This is an API for BWA News",
+    "title": "BWA News API",
+    "contact": {
+      "name": "admin",
+      "email": "admin@gmail.com"
+    },
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080/api"
+    }
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "description": "API LOGIN",
+        "tags": ["auth"],
+        "summary": "API LOGIN",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "SUCCESS",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/categories": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "API Category",
+        "tags": ["category"],
+        "summary": "API Category",
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/CategoryResponse"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "API Create Category",
+        "tags": ["category"],
+        "summary": "API Create Category",
+        "parameter": [
+          {
+            "description": "Create Category",
+            "name": "category",
+            "in": "body",
+            "schema": {
+              "$ref": "#/components/schemas/CategoryRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/categories/{categoryID}": {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get By ID Category",
+        "tags": ["category"],
+        "summary": "Get By ID Category",
+        "parameter": {
+          "name": "categoryID",
+          "in": "path",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                            "$ref": "#/components/schemas/CategoryResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Update By ID Category",
+        "tags": ["category"],
+        "summary": "Update By ID Category",
+        "parameter": {
+          "name": "categoryID",
+          "in": "path",
+          "required": true
+        },
+        "requestBody" : {
+            "required" : true,
+            "content" : {
+                "application/json" : {
+                    "schema": {
+                        "$ref" : "#/components/schemas/CategoryRequest"
+                    }
+                }
+            }
+        },
+        "responses" : {
+            "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Delete By ID Category",
+        "tags": ["category"],
+        "summary": "Delete By ID Category",
+        "parameter": {
+          "name": "categoryID",
+          "in": "path",
+          "required": true
+        },
+        "requestBody" : {
+            "required" : true,
+            "content" : {
+                "application/json" : {
+                    "schema": {
+                        "$ref" : "#/components/schemas/CategoryRequest"
+                    }
+                }
+            }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "success",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          },
+          "400" : {
+            "description" : "Bad Request",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/contents" : {
+      "get": {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get Contents",
+        "tags": ["content"],
+        "summary": "Get Contents",
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ContentResponse"
+                          }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post" : {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Create Content",
+        "tags": ["content"],
+        "summary": "Create Content",
+        "parameter": [
+          {
+            "description": "Create Content",
+            "name": "content",
+            "in": "body",
+            "schema": {
+              "$ref": "#/components/schemas/ContentRequest"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "admin/contents/{contentID}" : {
+      "get" : {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Get By ID Content",
+        "tags": ["content"],
+        "summary": "Get By ID Content",
+        "parameter": {
+          "name": "contentID",
+          "in": "path",
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "allOf": [
+                    {
+                      "$ref": "#/components/schemas/DefaultResponse"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "data": {
+                            "$ref": "#/components/schemas/ContentResponse"
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put" : {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Update By ID Content",
+        "tags": ["content"],
+        "summary": "Update By ID Content",
+        "parameter": {
+          "name": "contentID",
+          "in": "path",
+          "required": true
+        },
+        "requestBody" : {
+            "required" : true,
+            "content" : {
+                "application/json" : {
+                    "schema": {
+                        "$ref" : "#/components/schemas/ContentRequest"
+                    }
+                }
+            }
+        },
+        "responses" : {
+            "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete" : {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Delete By ID Content",
+        "tags": ["content"],
+        "summary": "Delete By ID Content",
+        "parameter": {
+          "name": "contentID",
+          "in": "path",
+          "required": true
+        },
+        "responses" : {
+            "200": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "admin/contents/upload-image" : {
+      "post" : {
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Upload Image Content",
+        "tags": ["content"],
+        "summary": "Upload Image Content",
+        "requestBody" : {
+          "required" : true,
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "image" : {
+                    "type" : "string",
+                    "format" : "binary",
+                    "description" : "Image file upload"
+                  }
+                 },
+                 "required" : ["image"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefaultResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "schemas": {
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "user@example.com"
+          },
+          "password": {
+            "type": "string",
+            "example": "password123"
+          }
+        }
+      },
+      "CategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Category 1"
+          },
+          "slug": {
+            "type": "string",
+            "example": "Category-1"
+          },
+          "created_by_name": {
+            "type": "string",
+            "example": "Jhon Doe"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "boolean",
+                "example": false
+              },
+              "message": {
+                "type": "string",
+                "example": "An error occurred"
+              }
+            }
+          }
+        }
+      },
+      "DefaultResponse": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "boolean",
+                "example": true
+              },
+              "message": {
+                "type": "string",
+                "example": "success"
+              }
+            }
+          }
+        }
+      },
+      "ContentRequest": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "example": "Judul"
+          },
+          "excerpt": {
+            "type": "string",
+            "example": "judul"
+          },
+          "description": {
+            "type": "string",
+            "example": "Judul"
+          },
+          "tags": {
+            "type": "string",
+            "example": "judul"
+          },
+          "category_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "status": {
+            "type": "string",
+            "example": "Draft"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://image.co"
+          }
+        }
+      },
+      "UpdatePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "example": "password"
+          },
+          "new_password": {
+            "type": "string",
+            "example": "password123"
+          },
+          "confirm_password": {
+            "type": "string",
+            "example": "password123"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "meta": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "boolean",
+                "example": true
+              },
+              "message": {
+                "type": "string",
+                "example": "success"
+              }
+            }
+          },
+          "access_token": {
+            "type": "string",
+            "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9M"
+          },
+          "expired_at": {
+            "type": "integer",
+            "example": 12213123
+          }
+        }
+      },
+      "ContentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "title": {
+            "type": "string",
+            "example": "Category 1"
+          },
+          "excerpt": {
+            "type": "string",
+            "example": "Category-1"
+          },
+          "description": {
+            "type": "string",
+            "example": "Category-1"
+          },
+          "status": {
+            "type": "string",
+            "example": "Publish"
+          },
+          "image": {
+            "type": "string",
+            "example": "https://image.co"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "data"
+            }
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "category_name": {
+            "type": "string",
+            "example": "satu"
+          },
+          "author": {
+            "type": "string",
+            "example": "Jhon Doe"
+          },
+          "category_id": {
+            "type": "integer",
+            "example": 1
+          },
+          "created_by_id": {
+            "type": "integer",
+            "example": 1
+          }
+        }
+      },
+      "ProfileResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "example": 1
+          },
+          "name": {
+            "type": "string",
+            "example": "Jhon Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "JhonDoe@example.com"
+          }
+        }
+      }
+    }
+  }
+}

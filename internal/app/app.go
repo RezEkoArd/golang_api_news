@@ -17,6 +17,8 @@ import (
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -71,7 +73,7 @@ func RunServer() {
 	contentHandler := handler.NewContentHandler(contentService)
 	userHandler := handler.NewUserHandler(userService)
 
-	//initialize Serve
+	//? initialize Serve
 	app := fiber.New()
 	app.Use(cors.New())
 	app.Use(recover.New())
@@ -79,8 +81,32 @@ func RunServer() {
 		Format: "[${time}] ${ip} ${status} - ${latency} ${method} ${path} \n",
 	}))
 
+	// check ENV PROD OR DEV
+	if os.Getenv("APP_ENV") != "production" { //"production"|| "development"
+		cfg := swagger.Config{
+			BasePath: "/",
+			FilePath: "./docs/swagger.json",
+			Path: "docs",
+			Title: "Swagger API Docs",
+		}
+
+		app.Use(swagger.New(cfg))
+	} 
+
 	api := app.Group("/api")
 	api.Post("/login", authHandler.Login)
+
+	// check ENV PROD OR DEV
+	if os.Getenv("APP_ENV") != "production" { //"production"|| "development"
+		cfg := swagger.Config{
+			BasePath: "/api",
+			FilePath: "./docs/swagger.json",
+			Path: "docs",
+			Title: "Swagger API Docs",
+		}
+
+		app.Use(swagger.New(cfg))
+	} 
 
 	
 	adminApp := api.Group("/admin")
@@ -110,7 +136,7 @@ func RunServer() {
 	userApp.Put("/update-password",userHandler.UpdatePassword)
  
 
-	// routes
+	//? routes
 	 go func() {
 		if cfg.App.AppPort == "" {
 			cfg.App.AppPort = os.Getenv("APP_PORT")
