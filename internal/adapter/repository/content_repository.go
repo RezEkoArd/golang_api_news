@@ -123,9 +123,16 @@ func (c *contentRepository) GetContents(ctx context.Context, query entity.QueryS
 	//? pake Query ilike untuk menghindari sensitive case 
 
 	//? Query get all and Pagination with offset
-	err = c.db.Preload(clause.Associations).
+
+	sqlMain := c.db.Preload(clause.Associations).
 	Where("title ilike ? OR excerpt ilike ? OR description ilike ?", searchQuery, searchQuery, searchQuery).
-	Where("status LIKE ?", statusFilter).
+	Where("status LIKE ?", statusFilter)
+
+	if query.CategoryId > 0 {
+		sqlMain = sqlMain.Where("category_id = ?", query.CategoryId)
+	}
+
+	err = sqlMain.
 	Order(order).
 	Limit(query.Limit).
 	Offset(offset). 
