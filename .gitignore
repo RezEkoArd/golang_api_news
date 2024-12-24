@@ -4,6 +4,8 @@
 # Abaikan direktori node_modules
 # node_modules/
 
+/temp
+
 # Abaikan semua file sementara dari sistem operasi
 # .DS_Store
 # Thumbs.db
