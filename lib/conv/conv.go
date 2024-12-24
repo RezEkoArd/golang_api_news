@@ -39,7 +39,7 @@ func GenerateSlug(title string) string {
 	return slug	
 }
 
-//
+// Convert String to Integer
 func StringToInt(s string) (int, error) {
 	numb, err := strconv.Atoi(s)
 	if err != nil {
