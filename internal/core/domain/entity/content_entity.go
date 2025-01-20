@@ -17,13 +17,12 @@ type ContentEntity struct {
 	User UserEntity
 }
 
-// untuk Pagination
 type QueryString struct {
 	Limit int
 	Page int
 	OrderBy string
 	OrderType string
 	Search string
-	CategoryId int64
+	CategoryID int64
 	Status string
 }

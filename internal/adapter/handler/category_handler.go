@@ -28,17 +28,17 @@ type categoryHandler struct {
 	categoryService service.CategoryService
 }
 
-// GetCategoryFE implements CategoryHandler.
+//? GetCategoryFE implements CategoryHandler.
 func (ch *categoryHandler) GetCategoryFE(c *fiber.Ctx) error {
 	results, err := ch.categoryService.GetCategories(c.Context())
 
-	if err != nil  {
-		code = "[HANDLER] GetCategoryFE - 1"
-			log.Errorw(code, err)
-			errorResp.Meta.Status = false
-			errorResp.Meta.Message = err.Error()
-	
-			return c.Status(fiber.StatusInternalServerError).JSON(errorResp)
+	if err != nil {
+		code = "[HANDLER] GetCatergoryFE -1 "
+		log.Errorw(code, err)
+		errorResp.Meta.Status = false
+		errorResp.Meta.Message = err.Error()
+
+		return c.Status(fiber.StatusBadRequest).JSON(errorResp)
 	}
 
 	categoryResponses := []response.SuccessCategoryResponse{}
@@ -51,13 +51,13 @@ func (ch *categoryHandler) GetCategoryFE(c *fiber.Ctx) error {
 		}
 		categoryResponses = append(categoryResponses, categoryResponse)
 	}
+
 	defaultSuccessResponse.Meta.Status = true
 	defaultSuccessResponse.Pagination = nil
-	defaultSuccessResponse.Meta.Message = "Categories fetched successfully"
+	defaultSuccessResponse.Meta.Message = "Category fetches successfully"
 	defaultSuccessResponse.Data = categoryResponses
 
 	return c.JSON(defaultSuccessResponse)
-
 }
 
 // CreateCategory implements CategoryHandler.
